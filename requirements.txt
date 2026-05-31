@@ -1,0 +1,4 @@
+httpx>=0.27
+pycognito>=2024.5.1
+icalendar>=6.0
+python-dotenv>=1.0

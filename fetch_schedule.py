@@ -6,6 +6,7 @@ import os
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from urllib.parse import quote
 
 import httpx
 from botocore import UNSIGNED
@@ -28,6 +29,15 @@ HORIZON_DAYS = 14
 OUTPUT_PATH = Path("out/schedule.ics")
 
 DEEP_LINK_BASE = "https://mobile.orangetheory.com/app?screen=booking"
+
+
+def deep_link(class_id: str, studio_id: str, studio_name: str) -> str:
+    return (
+        f"{DEEP_LINK_BASE}"
+        f"&classId={class_id}"
+        f"&studioId={studio_id}"
+        f"&studioName={quote(studio_name)}"
+    )
 
 
 def login(email: str, password: str) -> str:
@@ -97,6 +107,7 @@ def event_description(c: dict, refreshed_at: datetime) -> str:
     coach = (c.get("coach") or {}).get("first_name", "—")
     studio_name = (c.get("studio") or {}).get("name", "—")
 
+    studio_id = (c.get("studio") or {}).get("id", "")
     lines = [
         f"{status} ({cap}-seat class)",
         f"Coach: {coach}",
@@ -104,7 +115,7 @@ def event_description(c: dict, refreshed_at: datetime) -> str:
         f"Last refreshed: {refreshed_at.strftime('%Y-%m-%d %H:%M UTC')}",
         f"Class ID: {c['id']}",
         "",
-        f"Open in OTF app: {DEEP_LINK_BASE}",
+        f"Book in OTF app: {deep_link(c['id'], studio_id, studio_name)}",
     ]
     return "\n".join(lines)
 
